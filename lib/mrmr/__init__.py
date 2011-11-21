@@ -7,6 +7,7 @@ from _fastcaimmrmr import *
 from _kde import *
 from _mixedmrmr import *
 from _phylomrmr import *
+from _uithread import *
 
 __all__ = []
 __all__ += _discretemrmr.__all__
@@ -15,3 +16,4 @@ __all__ += _fastcaimmrmr.__all__
 __all__ += _kde.__all__
 __all__ += _mixedmrmr.__all__
 __all__ += _phylomrmr.__all__
+__all__ += _uithread.__all__
