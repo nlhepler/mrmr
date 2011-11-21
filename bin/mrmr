@@ -59,27 +59,27 @@ def main(argv, ui=None):
     while i < len(argv):
         if argv[i][0] == '-':
             opt = argv[i][1]
-            if opt is 'n':
+            if opt == 'n':
                 num_features = int(argv[i+1])
                 i += 2
                 continue
-            elif opt is 'd':
+            elif opt == 'd':
                 klass = DiscreteMrmr
                 i += 1
                 continue
-            elif opt is 'c':
+            elif opt == 'c':
                 klass = MixedMrmr
                 i += 1
                 continue
-            elif opt is 'p':
+            elif opt == 'p':
                 klass = PhyloMrmr
                 i += 1
                 continue
-            elif opt is 'N':
+            elif opt == 'N':
                 normalized = True
                 i += 1
                 continue
-            elif opt is '-':
+            elif opt == '-':
                 if argv[i][2:] == 'gpl':
                     print 'Go look up the GNU GPLv2 on gnu.org'
                     return 0

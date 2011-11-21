@@ -187,7 +187,7 @@ class BaseMrmr(object):
                         # mRMR: MID then MIQ
                         np.nan_to_num(
                             maxrel - np.sum(s_vars[j][idx] for j, _, _ in mrmr_vals) / len(mrmr_vals)
-                        ) if method is BaseMrmr.MID else \
+                        ) if method == BaseMrmr.MID else \
                         np.nan_to_num(
                             maxrel / np.sum(s_vars[j][idx] for j, _, _ in mrmr_vals) / len(mrmr_vals)
                         )
@@ -258,7 +258,7 @@ class BaseMrmr(object):
         if not self.__computed:
             raise StandardError('No mRMR model computed')
 
-        if self.method is BaseMrmr.MAXREL:
+        if self.method == BaseMrmr.MAXREL:
             return [iv[0] for iv in self.__maxrel]
         else:
             return [ivr[0] for ivr in self.__mrmr]

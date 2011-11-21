@@ -34,6 +34,10 @@ from _basemrmr import BaseMrmr
 __all__ = ['PhyloMrmr']
 
 
+def _marginal(v_b, v_p, b):
+    return (v_b * v_p) + ((1-v_b) * (1.-v_p))
+
+
 def _inv_if(v, b):
     return 1. - v if b else v
 
@@ -44,23 +48,31 @@ def _compute_mi_inner(nrow, v, variables, t, targets, log, p=None):
     v_b = variables[:, :]['b'] == v
     v_p = _inv_if(variables[:, :]['p'], v)
 
-    p_v = np.sum(v_b * v_p, axis=0).astype(float) / nrow # np.sum(v_p, axis=0)
+    p_v = np.sum(v_b * v_p, axis=0).astype(float) / nrow
+    # np.sum(_marginal(v_b, v_p, v), axis=0) # np.sum(v_p, axis=0)
     p_t = None
     p_tv = None
 
     if targets.dtype in (bool, int):
         t_b = targets == t
         p_t = float(np.sum(t_b)) / nrow
-        p_tv = np.sum(t_b * v_b * v_p, axis=0).astype(float) / nrow # np.sum(v_p, axis=0)
+        p_tv = np.sum(t_b * v_b * v_p, axis=0).astype(float) / nrow
+        # np.sum(_marginal(v_b, v_p, v), axis=0) # nrow # np.sum(v_p, axis=0)
     else:
         t_b = targets[:, :]['b'] == t
         t_p = _inv_if(targets[:, :]['p'], t)
 
-        p_t = np.sum(t_b * t_p, axis=0).astype(float) / nrow # np.sum(t_p, axis=0)
-        p_tv = np.sum(t_b * t_p * v_b * v_p, axis=0).astype(float) / nrow #  np.sum(t_p * v_p, axis=0)
+        p_t = np.sum(t_b * t_p, axis=0).astype(float) / nrow
+        # np.sum(_marginal(t_b, t_p, t), axis=0) # nrow # np.sum(t_p, axis=0)
+        p_tv = np.sum(t_b * t_p * v_b * v_p, axis=0).astype(float) / nrow
+        # np.sum(_marginal(t_b, t_p, t) * _marginal(v_b, v_p, v), axis=0) # nrow #  np.sum(t_p * v_p, axis=0)
 
     mi = np.nan_to_num(p_tv * log(p_tv / (p_t * p_v)))
     h = -np.nan_to_num(p_tv * log(p_tv))
+
+    # this should fix value errors 
+    mi *= (p_tv != 0.)
+    h *= (p_tv != 0.)
 
     # print 'targets:', targets_t.T.astype(int), 'class:', v, 'p_t:', p_t, 'p_v:', p_v, 'p_tv:', p_tv, 'mi:', mi
 

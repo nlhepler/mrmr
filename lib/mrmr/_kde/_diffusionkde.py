@@ -119,7 +119,7 @@ class DiffusionKde(object):
             r = dmax - dmin
             interval = Interval(min=dmin - (r / 10.), max=dmax + (r / 10.))
 
-        if type(interval) != Interval:
+        if not isinstance(interval, Interval):
             raise ValueError('interval must be of type Interval')
 
         self.__interval = interval
