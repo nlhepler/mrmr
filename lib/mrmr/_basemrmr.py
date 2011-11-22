@@ -22,6 +22,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+import logging
+
 from operator import itemgetter
 from sys import stdout
 
@@ -108,6 +110,15 @@ class BaseMrmr(object):
         if method not in (BaseMrmr.MAXREL, BaseMrmr.MID, BaseMrmr.MIQ):
             raise ValueError('method must be one of BaseMrmr.MAXREL, BaseMrmr.MID, or BaseMrmr.MIQ')
 
+        log = logging.getLogger('mrmr')
+        log.setLevel(logging.DEBUG)
+        h = logging.StreamHandler()
+        f = logging.Formatter('%(levelname)s %(asctime)s %(funcName)s %(lineno)d %(message)s')
+        h.setFormatter(f)
+        log.addHandler(h)
+
+        log.debug('beginning selection')
+
         if threshold is None:
             threshold = cls._DEFAULT_THRESHOLD
 
@@ -126,7 +137,9 @@ class BaseMrmr(object):
 
         variables, targets, joint = cls._prepare(x, y, ui)
 
+        log.debug('computing MI to target variable')
         MI_t, H_t = cls._compute_mi(variables, targets, ui)
+        log.debug('done computing MI to target variable')
 
 #         MI_v, H_v = np.zeros((ncol, ncol), dtype=float), np.zeros((ncol, ncol), dtype=float)
 #
@@ -166,6 +179,8 @@ class BaseMrmr(object):
         mi_vars, h_vars = {}, {}
         s_vars = {} if cls._NORMALIZED else mi_vars
 
+        log.debug('selected variable %d with maxrel %.4f and mrmr %.4f' % (idx, maxrel, maxrel))
+
         mi_vars[idx], h_vars[idx] = cls._compute_mi_inter(variables, variables[:, idx], ui)
         if cls._NORMALIZED:
             s_vars[idx] = np.divide(mi_vars[idx], h_vars[idx])
@@ -195,6 +210,9 @@ class BaseMrmr(object):
                     for idx, maxrel in mi_vals[1:] if idx not in mask_idxs
                 ], key=itemgetter(2), reverse=True)[0]
             mi_vars[idx], h_vars[idx] = cls._compute_mi_intra(variables, variables[:, idx], ui)
+
+            log.debug('selected variable %d with maxrel %.4f and mrmr %.4f' % (idx, maxrel, mrmr))
+
             if cls._NORMALIZED:
                 s_vars[idx] = np.divide(mi_vars[idx], h_vars[idx])
 
@@ -227,6 +245,8 @@ class BaseMrmr(object):
 #         print mi_v
 
         np.seterr(**np_err)
+
+        log.debug('finished selection')
 
         return mi_vals[:num_features], sorted(mrmr_vals, key=itemgetter(1), reverse=True)[:num_features]
 
