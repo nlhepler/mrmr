@@ -37,6 +37,11 @@ __all__ = ['BaseMrmr', 'MRMR_LOGGER']
 
 MRMR_LOGGER = 'M4zhcs3U6vNLPLF8nNZkX75G'
 
+_h = logging.StreamHandler()
+_f = logging.Formatter('%(levelname)s %(asctime)s %(process)d %(funcName)s: %(message)s')
+_h.setFormatter(_f)
+logging.getLogger(MRMR_LOGGER).addHandler(_h)
+
 
 class BaseMrmr(object):
     _NORMALIZED = False
@@ -114,11 +119,6 @@ class BaseMrmr(object):
             raise ValueError('method must be one of BaseMrmr.MAXREL, BaseMrmr.MID, or BaseMrmr.MIQ')
 
         log = logging.getLogger(MRMR_LOGGER)
-        h = logging.StreamHandler()
-        f = logging.Formatter('%(levelname)s %(asctime)s %(funcName)s: %(message)s')
-        h.setFormatter(f)
-        log.addHandler(h)
-
         log.debug('beginning selection')
 
         if threshold is None:
