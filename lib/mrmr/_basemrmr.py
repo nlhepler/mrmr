@@ -32,7 +32,10 @@ import numpy as np
 from fakemp import FakePool
 
 
-__all__ = ['BaseMrmr']
+__all__ = ['BaseMrmr', 'MRMR_LOGGER']
+
+
+MRMR_LOGGER = 'M4zhcs3U6vNLPLF8nNZkX75G'
 
 
 class BaseMrmr(object):
@@ -110,10 +113,9 @@ class BaseMrmr(object):
         if method not in (BaseMrmr.MAXREL, BaseMrmr.MID, BaseMrmr.MIQ):
             raise ValueError('method must be one of BaseMrmr.MAXREL, BaseMrmr.MID, or BaseMrmr.MIQ')
 
-        log = logging.getLogger('mrmr')
-        log.setLevel(logging.DEBUG)
+        log = logging.getLogger(MRMR_LOGGER)
         h = logging.StreamHandler()
-        f = logging.Formatter('%(levelname)s %(message)s')
+        f = logging.Formatter('%(levelname)s %(asctime)s %(funcName)s: %(message)s')
         h.setFormatter(f)
         log.addHandler(h)
 

@@ -14,7 +14,7 @@ setup(name='mrmr',
       author='N Lance Hepler',
       author_email='nlhepler@gmail.com',
       url='http://github.com/nlhepler/mrmr',
-      license='GNU GPL version 3',
+      license='GNU GPL version 2',
       packages=['mrmr', 'mrmr._kde'],
       package_dir={
             'mrmr': 'lib/mrmr',

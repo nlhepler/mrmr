@@ -22,12 +22,12 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-import os, sys, time
+import logging, os, sys, time
 
 import multiprocessing as mp
 import numpy as np
 
-from mrmr import DiscreteMrmr, FastCaim, UiThread, GaussianKde, MixedMrmr, PhyloMrmr
+from mrmr import MRMR_LOGGER, DiscreteMrmr, FastCaim, UiThread, GaussianKde, MixedMrmr, PhyloMrmr
 
 
 THRESHOLD = 0.8
@@ -83,6 +83,11 @@ def main(argv, ui=None):
                 if argv[i][2:] == 'gpl':
                     print 'Go look up the GNU GPLv2 on gnu.org'
                     return 0
+                elif argv[i][2:] == 'log':
+                    log = logging.getLogger(MRMR_LOGGER)
+                    log.setLevel(logging.DEBUG)
+                    i += 1
+                    continue
             return usage()
         else:
             argv = argv[i:]
