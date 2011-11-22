@@ -31,16 +31,10 @@ import numpy as np
 
 from fakemp import FakePool
 
+from _logging import MRMR_LOGGER
 
-__all__ = ['BaseMrmr', 'MRMR_LOGGER']
 
-
-MRMR_LOGGER = 'M4zhcs3U6vNLPLF8nNZkX75G'
-
-_h = logging.StreamHandler()
-_f = logging.Formatter('%(levelname)s %(asctime)s %(process)d %(funcName)s: %(message)s')
-_h.setFormatter(_f)
-logging.getLogger(MRMR_LOGGER).addHandler(_h)
+__all__ = ['BaseMrmr']
 
 
 class BaseMrmr(object):
@@ -119,7 +113,7 @@ class BaseMrmr(object):
             raise ValueError('method must be one of BaseMrmr.MAXREL, BaseMrmr.MID, or BaseMrmr.MIQ')
 
         log = logging.getLogger(MRMR_LOGGER)
-        log.debug('beginning selection')
+        log.debug('beginning %d-variable selection' % num_features)
 
         if threshold is None:
             threshold = cls._DEFAULT_THRESHOLD
@@ -178,7 +172,7 @@ class BaseMrmr(object):
         mi_vars, h_vars = {}, {}
         s_vars = {} if cls._NORMALIZED else mi_vars
 
-        log.debug('selected variable %d with maxrel %.4f and mrmr %.4f' % (idx, maxrel, maxrel))
+        log.debug('selected (1) variable %d with maxrel %.4f and mrmr %.4f' % (idx, maxrel, maxrel))
 
         mi_vars[idx], h_vars[idx] = cls._compute_mi_inter(variables, variables[:, idx], ui)
         if cls._NORMALIZED:
@@ -192,7 +186,8 @@ class BaseMrmr(object):
         mask_idxs = [idx]
 
         # do one extra because the sorting is sometimes off, do y-1 because we already include a feature by default
-        for k in xrange(min(num_features, ncol-1)):
+        # don't do the extra feature, we don't want that sort of behavior
+        for k in xrange(min(num_features-1, ncol-1)):
             idx, maxrel, mrmr = sorted(
                 [
                     (
@@ -210,7 +205,7 @@ class BaseMrmr(object):
                 ], key=itemgetter(2), reverse=True)[0]
             mi_vars[idx], h_vars[idx] = cls._compute_mi_intra(variables, variables[:, idx], ui)
 
-            log.debug('selected variable %d with maxrel %.4f and mrmr %.4f' % (idx, maxrel, mrmr))
+            log.debug('selected (%d) variable %d with maxrel %.4f and mrmr %.4f' % (k + 2, idx, maxrel, mrmr))
 
             if cls._NORMALIZED:
                 s_vars[idx] = np.divide(mi_vars[idx], h_vars[idx])
@@ -245,7 +240,7 @@ class BaseMrmr(object):
 
         np.seterr(**np_err)
 
-        log.debug('finished selection')
+        log.debug('finished %d-variable selection' % num_features)
 
         return mi_vals[:num_features], sorted(mrmr_vals, key=itemgetter(1), reverse=True)[:num_features]
 
