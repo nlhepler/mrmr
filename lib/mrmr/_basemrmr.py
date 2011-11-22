@@ -138,10 +138,7 @@ class BaseMrmr(object):
             ui.start()
 
         variables, targets, joint = cls._prepare(x, y, ui)
-
-        log.debug('computing MI to target variable')
         MI_t, H_t = cls._compute_mi(variables, targets, ui)
-        log.debug('done computing MI to target variable')
 
 #         MI_v, H_v = np.zeros((ncol, ncol), dtype=float), np.zeros((ncol, ncol), dtype=float)
 #
