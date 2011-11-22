@@ -113,7 +113,7 @@ class BaseMrmr(object):
         log = logging.getLogger('mrmr')
         log.setLevel(logging.DEBUG)
         h = logging.StreamHandler()
-        f = logging.Formatter('%(levelname)s %(asctime)s %(funcName)s %(lineno)d %(message)s')
+        f = logging.Formatter('%(levelname)s %(message)s')
         h.setFormatter(f)
         log.addHandler(h)
 
