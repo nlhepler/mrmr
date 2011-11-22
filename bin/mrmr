@@ -84,8 +84,7 @@ def main(argv, ui=None):
                     print 'Go look up the GNU GPLv2 on gnu.org'
                     return 0
                 elif argv[i][2:] == 'log':
-                    log = logging.getLogger(MRMR_LOGGER)
-                    log.setLevel(logging.DEBUG)
+                    logging.getLogger(MRMR_LOGGER).setLevel(logging.DEBUG)
                     i += 1
                     continue
             return usage()
