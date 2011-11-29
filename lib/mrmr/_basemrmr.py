@@ -127,7 +127,7 @@ class BaseMrmr(object):
 #         res_v = [{} for i in xrange(ncol)]
 
         if ui is not None:
-            ui.complete.value = 2 + num_features
+            ui.complete.value = 1 + num_features
             ui.progress.value = 0
             ui.start()
 
@@ -155,15 +155,14 @@ class BaseMrmr(object):
 #             d_v[i, :] = np.subtract(H_v[i, :], MI_v[i, :])
 #             D_v[i, :] = np.divide(d_v[i, :], H_v[i, :])
 
-
         mi_vals = None
         if cls._NORMALIZED:
             MIr_t = np.divide(MI_t, H_t)
             L_MIr_t = MIr_t.tolist()
-            mi_vals = sorted(zip(range(len(L_MIr_t)), L_MIr_t), key=itemgetter(1), reverse=True)
+            mi_vals = sorted(enumerate(L_MIr_t), key=itemgetter(1), reverse=True)
         else:
             L_MI_t = MI_t.tolist()
-            mi_vals = sorted(zip(range(len(L_MI_t)), L_MI_t), key=itemgetter(1), reverse=True)
+            mi_vals = sorted(enumerate(L_MI_t), key=itemgetter(1), reverse=True)
 
 #         L_d_t = d_t.tolist()
 #         L_D_t = D_t.tolist()
@@ -179,8 +178,10 @@ class BaseMrmr(object):
             s_vars[idx] = np.divide(mi_vars[idx], h_vars[idx])
 
         # find related values
-        mu = sorted(zip(range(ncol), s_vars[idx].tolist()), key=itemgetter(1), reverse=True)
-        related = [k for k in mu if k[1] > threshold and k[0] != idx]
+        related = sorted(((i, v) for i, v in enumerate(s_vars[idx]) if v > threshold and i != idx),
+            key=itemgetter(1),
+            reverse=True
+        )
 
         mrmr_vals = [(idx, maxrel, related)]
         mask_idxs = [idx]
@@ -188,21 +189,22 @@ class BaseMrmr(object):
         # do one extra because the sorting is sometimes off, do y-1 because we already include a feature by default
         # don't do the extra feature, we don't want that sort of behavior
         for k in xrange(min(num_features-1, ncol-1)):
-            idx, maxrel, mrmr = sorted(
-                [
+            idx, maxrel, mrmr = max(
+                (
                     (
                         idx,
                         maxrel,
                         # mRMR: MID then MIQ
                         np.nan_to_num(
-                            maxrel - np.sum(s_vars[j][idx] for j, _, _ in mrmr_vals) / len(mrmr_vals)
-                        ) if method == BaseMrmr.MID else \
+                            maxrel - sum(s_vars[j][idx] for j, _, _ in mrmr_vals) / len(mrmr_vals)
+                        ) if method == BaseMrmr.MID else
                         np.nan_to_num(
-                            maxrel / np.sum(s_vars[j][idx] for j, _, _ in mrmr_vals) / len(mrmr_vals)
+                            maxrel / sum(s_vars[j][idx] for j, _, _ in mrmr_vals) / len(mrmr_vals)
                         )
-                    ) \
-                    for idx, maxrel in mi_vals[1:] if idx not in mask_idxs
-                ], key=itemgetter(2), reverse=True)[0]
+                    ) for idx, maxrel in mi_vals[1:] if idx not in mask_idxs
+                ), key=itemgetter(2)
+            )
+
             mi_vars[idx], h_vars[idx] = cls._compute_mi_intra(variables, variables[:, idx], ui)
 
             log.debug('selected (%d) variable %d with maxrel %.4f and mrmr %.4f' % (k + 2, idx, maxrel, mrmr))
@@ -211,8 +213,10 @@ class BaseMrmr(object):
                 s_vars[idx] = np.divide(mi_vars[idx], h_vars[idx])
 
             # find related values
-            mu = sorted(zip(range(ncol), s_vars[idx].tolist()), key=itemgetter(1), reverse=True)
-            related = [k for k in mu if k[1] > threshold and k[0] != idx]
+            related = sorted(((i, v) for i, v in enumerate(s_vars[idx]) if v > threshold and i != idx),
+                key=itemgetter(1),
+                reverse=True
+            )
 
             mrmr_vals.append((idx, mrmr, related))
             mask_idxs.append(idx)

@@ -22,11 +22,11 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-# import multiprocessing as mp
-
 import numpy as np
 
-from fakemp import FakePool
+from multiprocessing import cpu_count
+
+from fakemp import farmout, farmworker 
 
 from _basemrmr import BaseMrmr
 
@@ -34,25 +34,23 @@ from _basemrmr import BaseMrmr
 __all__ = ['DiscreteMrmr']
 
 
-def _compute_mi_inner_log2(nrow, vars_v, targets_t, p=None):
-    p_t = float(np.sum(targets_t)) / nrow # p(X == t)
-    p_v = np.sum(vars_v, axis=0).astype(float) / nrow # p(Y == v)
-    p_tv = np.sum(np.multiply(targets_t, vars_v), axis=0).astype(float) / nrow # p(X == t, Y == v)
-    mi = np.nan_to_num(np.multiply(p_tv, np.log2(p_tv / (p_t * p_v))))
-    h = -np.nan_to_num(np.multiply(p_tv, np.log2(p_tv)))
-
-    if p is not None:
-        p.value += 1
-
-    return mi, h
-
-
-def _compute_mi_inner_log10(nrow, vars_v, targets_t, p=None):
-    p_t = float(np.sum(targets_t)) / nrow # p(X == t)
-    p_v = np.sum(vars_v, axis=0).astype(float) / nrow # p(Y == v)
-    p_tv = np.sum(np.multiply(targets_t, vars_v), axis=0).astype(float) / nrow # p(X == t, Y == v)
-    mi = np.nan_to_num(np.multiply(p_tv, np.log10(p_tv / (p_t * p_v))))
-    h = -np.nan_to_num(np.multiply(p_tv, np.log10(p_tv)))
+def _compute_mi_inner(nrow, vclasses, variables, tclasses, targets, p=None):
+    ncol = variables.shape[1]
+    mi, h = np.zeros((ncol,), dtype=float), np.zeros((ncol,), dtype=float)
+    tcache = {}
+    for v in vclasses:
+        vars_v = variables == v
+        for t in tclasses:
+            if t in tcache:
+                p_t, targets_t = tcache[t]
+            else:
+                targets_t = targets == t
+                p_t = float(np.sum(targets_t)) / nrow # p(X == t)
+                tcache[t] = (p_t, targets_t)
+            p_v = np.sum(vars_v, axis=0).astype(float) / nrow # p(Y == v)
+            p_tv = np.sum(np.multiply(targets_t, vars_v), axis=0).astype(float) / nrow # p(X == t, Y == v)
+            mi += np.nan_to_num(np.multiply(p_tv, np.log2(p_tv / (p_t * p_v))))
+            h += -np.nan_to_num(np.multiply(p_tv, np.log2(p_tv)))
 
     if p is not None:
         p.value += 1
@@ -68,26 +66,18 @@ class DiscreteMrmr(BaseMrmr):
     @classmethod
     def _compute_mi(cls, variables, targets, ui=None):
 
-        nrow, ncol = variables.shape
-
-        logmod = None
-        maxclasses = np.ones(variables.shape, dtype=int) + 1 # this is broken, methinx: np.maximum(np.max(variables, axis=0), np.max(targets)) + 1
-
-        if np.all(maxclasses == 2):
-            workerfunc = _compute_mi_inner_log2
-        else:
-            workerfunc = _compute_mi_inner_log10
-            logmod = np.log10(maxclasses)
-
-        vclasses = np.max(variables) + 1
-        tclasses = np.max(targets) + 1
-
         targets = np.atleast_2d(targets)
 
+        vrow, vcol = variables.shape
+        trow, tcol = targets.shape
+
+        vclasses = set(variables.reshape((vrow * vcol,)))
+        tclasses = set(targets.reshape((trow * tcol,)))
+
         # transpose if necessary (likely if coming from array)
-        if targets.shape[0] == 1 and targets.shape[1] == variables.shape[0]:
+        if trow == 1 and tcol == vrow:
             targets = targets.T
-        elif targets.shape[1] != 1 or targets.shape[0] != variables.shape[0]:
+        elif tcol != 1 or trow != vrow:
             raise ValueError('`y\' should have as many entries as `x\' has rows.')
 
         # initialized later
@@ -100,30 +90,27 @@ class DiscreteMrmr(BaseMrmr):
 
         res = {}
 
-        pool = FakePool() # mp.Pool(mp.cpu_count())
+#         numcpu = cpu_count()
+#         percpu = int(vcol / numcpu + 0.5) 
 
-        for v in xrange(vclasses):
-            vcache[v] = variables == v
-            for t in xrange(tclasses):
-                if t not in tcache:
-                    tcache[t] = targets == t
-                res[(t, v)] = pool.apply_async(workerfunc, (nrow, vcache[v], tcache[t], progress))
+        mi, h = _compute_mi_inner(vrow, vclasses, variables, tclasses, targets, progress)
 
-        pool.close()
-        pool.join()
+#         results = farmout(
+#             num=numcpu,
+#             setup=lambda i: (
+#                 _compute_mi_inner,
+#                 nrow,
+#                 vclasses, variables[:, (percpu*i):min(percpu*(i+1), ncol)],
+#                 tclasses, targets,
+#                 progress
+#             ),
+#             worker=farmworker,
+#             isresult=lambda r: isinstance(r, tuple) and len(r) == 2,
+#             attempts=1
+#         )
 
-        mi, h = np.zeros((ncol,), dtype=float), np.zeros((ncol,), dtype=float)
-
-        for r in res.values():
-            mi_, h_ = r.get()
-            mi += mi_
-            h += h_
-            if progress is not None:
-                progress.value += 1
-
-        if logmod is not None:
-            mi /= logmod
-            h  /= logmod
+#         mi = np.hstack(r[0] for r in results)
+#         h = np.hstack(r[1] for r in results)
 
         return np.nan_to_num(mi), np.nan_to_num(h)
 
@@ -136,10 +123,10 @@ class DiscreteMrmr(BaseMrmr):
         if y.dtype != int and y.dtype != bool:
             raise ValueError('Y must belong to discrete classes of type `int\'')
 
-        vars = np.copy(x)
+        variables = np.copy(x)
         targets = np.copy(np.atleast_2d(y))
 
-        if ui is not None:
-            ui.complete.value *= 8
+#         if ui is not None:
+#             ui.complete.value *= 8
 
-        return vars, targets, None
+        return variables, targets, None

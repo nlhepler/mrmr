@@ -95,13 +95,13 @@ def main(argv, ui=None):
     if klass is None:
         klass = DiscreteMrmr
 
-    files = find_files(argv[0])
-
-    if len(argv) != 1 or files is None:
+    if len(argv) != 1:
         return usage()
 
+    files = find_files(argv[0])
+
     if len(files) == 1:
-        fh = open(argv[0], 'r')
+        fh = open(files[0], 'r')
         lines = [l.strip() for l in fh]
         fh.close()
 
@@ -109,7 +109,7 @@ def main(argv, ui=None):
         arr = [[float(x) for x in l.split(',')] for l in lines[1:] if l != '']
         m = np.array(arr, dtype=float)
 
-        targets = m[:, 0].astype(bool)
+        targets = m[:, 0].astype(int)
         variables = m[:, 1:]
     elif len(files) == 3:
         for suffix in ('.colnames.json', '.x.npz', '.y.npz'):
