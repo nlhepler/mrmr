@@ -34,8 +34,8 @@ from _basemrmr import BaseMrmr
 __all__ = ['DiscreteMrmr']
 
 
-def _compute_mi_inner(nrow, vclasses, variables, tclasses, targets, p=None):
-    ncol = variables.shape[1]
+def _compute_mi_inner(vclasses, variables, tclasses, targets, p=None):
+    nrow, ncol = variables.shape
     mi, h = np.zeros((ncol,), dtype=float), np.zeros((ncol,), dtype=float)
     tcache = {}
     for v in vclasses:
@@ -63,37 +63,30 @@ class DiscreteMrmr(BaseMrmr):
     def __init__(self, *args, **kwargs):
         super(DiscreteMrmr, self).__init__(*args, **kwargs)
 
-    @classmethod
-    def _compute_mi(cls, variables, targets, ui=None):
+    @staticmethod
+    def _compute_mi(variables, targets, ui=None):
 
         targets = np.atleast_2d(targets)
 
         vrow, vcol = variables.shape
         trow, tcol = targets.shape
 
-        vclasses = set(variables.reshape((vrow * vcol,)))
-        tclasses = set(targets.reshape((trow * tcol,)))
-
-        # transpose if necessary (likely if coming from array)
         if trow == 1 and tcol == vrow:
             targets = targets.T
         elif tcol != 1 or trow != vrow:
             raise ValueError('`y\' should have as many entries as `x\' has rows.')
 
-        # initialized later
-        vcache = {}
-        tcache = {}
+        vclasses = set(variables.reshape((vrow * vcol,)))
+        tclasses = set(targets.reshape((trow * tcol,)))
 
         progress = None
         if ui:
             progress = ui.progress
 
-        res = {}
-
 #         numcpu = cpu_count()
 #         percpu = int(vcol / numcpu + 0.5) 
 
-        mi, h = _compute_mi_inner(vrow, vclasses, variables, tclasses, targets, progress)
+        return _compute_mi_inner(vclasses, variables, tclasses, targets, progress)
 
 #         results = farmout(
 #             num=numcpu,
@@ -112,7 +105,7 @@ class DiscreteMrmr(BaseMrmr):
 #         mi = np.hstack(r[0] for r in results)
 #         h = np.hstack(r[1] for r in results)
 
-        return np.nan_to_num(mi), np.nan_to_num(h)
+#         return np.nan_to_num(mi), np.nan_to_num(h)
 
     @staticmethod
     def _prepare(x, y, ui=None):
@@ -125,6 +118,14 @@ class DiscreteMrmr(BaseMrmr):
 
         variables = np.copy(x)
         targets = np.copy(np.atleast_2d(y))
+
+        vrow, vcol = variables.shape
+        trow, tcol = targets.shape
+
+        if trow == 1 and tcol == vrow:
+            targets = targets.T
+        elif tcol != 1 or trow != vrow:
+            raise ValueError('`y\' should have as many entries as `x\' has rows.')
 
 #         if ui is not None:
 #             ui.complete.value *= 8
