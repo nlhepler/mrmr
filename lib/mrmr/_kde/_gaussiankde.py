@@ -43,12 +43,12 @@ class _GaussianKde(object):
         ret = np.zeros((n,), dtype=_x.dtype)
 
         if n >= self.__n:
-            for i in xrange(self.__n):
+            for i in range(self.__n):
                 D = self.__dataset[:, i, np.newaxis] - _x
                 T = np.dot(self.__inv_cov, D)
                 ret += np.exp(-np.sum(D * T, axis=0) / 2.)
         else:
-            for i in xrange(n):
+            for i in range(n):
                 D = self.__dataset - _x[:, i, np.newaxis]
                 T = np.dot(self.__inv_cov, D)
                 ret[i] += np.sum(np.exp(-np.sum(D * T, axis=0) / 2.), axis=0)
@@ -61,7 +61,7 @@ class _GaussianKde(object):
 
 
 def main():
-    from _data import DATA as data
+    from ._data import DATA as data
     from time import time
 
 #     d1 = np.random.randn(100) + 5
@@ -82,7 +82,7 @@ def main():
 
     kde = GaussianKde(data)
 
-    print d_3, kde(d_3); pdf = kde(mesh)
+    print(d_3, kde(d_3)); pdf = kde(mesh)
 
     runtime = time() - begin
 
@@ -90,9 +90,9 @@ def main():
 
     # print runtime, bandwidth, len(density), np.sum(density), len(mesh), sum(pdf), cdf[-1]
 
-    print runtime
+    print(runtime)
 
-    print sum(pdf) * dx
+    print(sum(pdf) * dx)
 
     cdf = np.cumsum(pdf)
     cdf /= cdf[-1]

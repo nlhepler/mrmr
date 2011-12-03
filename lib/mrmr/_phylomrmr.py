@@ -28,7 +28,7 @@ import numpy as np
 
 from fakemp import FakePool
 
-from _basemrmr import BaseMrmr
+from ._basemrmr import BaseMrmr
 
 
 __all__ = ['PhyloMrmr']
@@ -98,8 +98,8 @@ class PhyloMrmr(BaseMrmr):
         if not np.all(maxclasses == 2):
             logmod = np.log10(maxclasses)
 
-        vclasses = xrange(2) # vclasses never assesses the ! case in phylomrmr 
-        tclasses = xrange(2)
+        vclasses = range(2) # vclasses never assesses the ! case in phylomrmr 
+        tclasses = range(2)
 
         targets = np.atleast_2d(targets)
 
@@ -136,7 +136,7 @@ class PhyloMrmr(BaseMrmr):
 
         mi, h = np.zeros((ncol,), dtype=float), np.zeros((ncol,), dtype=float)
 
-        for r in res.values():
+        for r in list(res.values()):
             mi_, h_ = r.get()
             mi += mi_
             h += h_

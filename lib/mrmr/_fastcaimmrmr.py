@@ -1,6 +1,6 @@
 
-from _fastcaim import FastCaim
-from _discretemrmr import DiscreteMrmr
+from ._fastcaim import FastCaim
+from ._discretemrmr import DiscreteMrmr
 
 
 __all__ = ['FastCaimMrmr']

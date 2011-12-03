@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3.2
 # -*- coding: utf-8 -*-
 
 #
@@ -22,6 +22,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from __future__ import division, print_function
+
 import logging, os, sys, time
 
 import multiprocessing as mp
@@ -34,7 +36,7 @@ THRESHOLD = 0.8
 
 
 def __usage():
-    print >> sys.stderr, 'usage: %s MRMRFILE' % __name
+    print('usage: %s MRMRFILE' % __name, file=sys.stderr)
     return -1
 
 
@@ -81,7 +83,7 @@ def main(argv, ui=None):
                 continue
             elif opt == '-':
                 if argv[i][2:] == 'gpl':
-                    print 'Go look up the GNU GPLv2 on gnu.org'
+                    print('Go look up the GNU GPLv2 on gnu.org')
                     return 0
                 elif argv[i][2:] == 'log':
                     logging.getLogger(MRMR_LOGGER).setLevel(logging.DEBUG)
@@ -132,11 +134,11 @@ def main(argv, ui=None):
 
     if klass == MixedMrmr:
         fc = FastCaim()
-        print 'starting discretization'
+        print('starting discretization')
         b = time.time()
         fc.learn(variables, targets)
         variables = fc.discretize(variables)
-        print 'done discretizing %i columns, took' % variables.shape[1], time.time() - b, 'seconds'
+        print('done discretizing %i columns, took' % variables.shape[1], time.time() - b, 'seconds')
         klass = DiscreteMrmr
 
     if normalized:
@@ -146,21 +148,21 @@ def main(argv, ui=None):
 
     selector = klass(num_features, klass.MID, THRESHOLD)
 
-    print 'starting feature selection'
+    print('starting feature selection')
     b = time.time()
 
     # hax to get at 'private' method
     maxrel, mrmr = selector._mrmr_selection(num_features, klass.MID, variables, targets, threshold=THRESHOLD, ui=ui)
 
-    print 'done feature selection across %i columns, took' % variables.shape[1], time.time() - b, 'seconds'
+    print('done feature selection across %i columns, took' % variables.shape[1], time.time() - b, 'seconds')
 
-    print 'I(X, Y) / H(X, Y)'
+    print('I(X, Y) / H(X, Y)')
     for idx, value in maxrel:
-        print '   %4d   % 5s   %6.4f' % (idx + 1, names[idx], value)
+        print('   %4d   % 5s   %6.4f' % (idx + 1, names[idx], value))
 
-    print '\nI(X, Y) / H(X, Y) - I(X, X) / H(X, X) (related > %.3g)' % THRESHOLD
+    print('\nI(X, Y) / H(X, Y) - I(X, X) / H(X, X) (related > %.3g)' % THRESHOLD)
     for idx, value, related in mrmr:
-        print '   %4d   % 5s   %6.4f   (%s)' % (idx + 1, names[idx], value, '%d' % len(related)) #', '.join([names[i] + ': %6.4f' % v for i, v in related]))
+        print('   %4d   % 5s   %6.4f   (%s)' % (idx + 1, names[idx], value, '%d' % len(related))) #', '.join([names[i] + ': %6.4f' % v for i, v in related]))
 
     # selector.select(variables, targets)
     # print selector.subset(variables)

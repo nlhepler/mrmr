@@ -13,9 +13,9 @@ def _compute_caim(y, y_eye, intervals, nY, nI, tmp1=None):
         tmp1 = np.zeros(y.shape, dtype=np.int32)
     res = 0.
     q, maxq = 0, 0
-    for i in xrange(nI):
+    for i in range(nI):
         tmp1[:] = intervals == i
-        for j in xrange(nY):
+        for j in range(nY):
             q = np.dot(tmp1, y_eye[j, :])
             if q > maxq:
                 maxq = q
@@ -36,7 +36,7 @@ def _compute_fcaim(x, y):
 
     B = np.zeros((nrow - 1,), dtype=np.float64)
     nB = 0
-    for i in xrange(1, nrow):
+    for i in range(1, nrow):
         # only insert boundaries if the class changes between two sorted variables
         a, b = sortxy[[i-1, i]]
         # if their value doesn't change, we've not actually inserted any boundary
@@ -60,14 +60,14 @@ def _compute_fcaim(x, y):
 
     nY = int(np.max(y)) + 1
     y_eye = np.zeros((nY, nrow), dtype=np.int32)
-    for i in xrange(nY):
+    for i in range(nY):
         y_eye[i, :] = y == i
 
     # make these here so that we don't constantly reinitialize arrays
     tmp1 = np.zeros((nrow,), dtype=np.int32)
 
     while True:
-        for i in xrange(nB):
+        for i in range(nB):
             # if i is in included, then we've already accounted for it in D, skip
             if i in included:
                 continue
@@ -97,7 +97,7 @@ def _compute_fcaim(x, y):
 
 def _discretize(x, b):
     n = np.zeros(x.shape, dtype=int)
-    for i in xrange(b.shape[0]):
+    for i in range(b.shape[0]):
         n += (x > b[i])
     return n
 
@@ -129,7 +129,7 @@ class FastCaim(object):
 
         res = []
 
-        for j in xrange(ncol):
+        for j in range(ncol):
             res.append(pool.apply_async(_compute_fcaim, (self.__x[j, :], self.__y)))
 
 #         newx = np.zeros(self.__x.shape, dtype=int)
@@ -139,7 +139,7 @@ class FastCaim(object):
         pool.close()
         pool.join()
 
-        for j in xrange(ncol):
+        for j in range(ncol):
             caims[j], b = res[j].get()
             boundaries.append(b)
 
@@ -156,9 +156,9 @@ class FastCaim(object):
 
         newx = np.zeros(x.shape, dtype=int)
 
-        for i in xrange(newx.shape[1]):
+        for i in range(newx.shape[1]):
             b = self.__boundaries[i]
-            for j in xrange(b.shape[0]):
+            for j in range(b.shape[0]):
                 newx[:, i] += (x[:, i] > b[j])
 
 #         pool = mp.Pool(mp.cpu_count())

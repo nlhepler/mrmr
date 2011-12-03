@@ -49,13 +49,13 @@ class DiffusionKde(object):
     @staticmethod
     def __bisect(f, a, b, args):
         tol = 4.4408920985006262e-16
-        fa = apply(f, (a,)+args)
-        fb = apply(f, (b,)+args)
+        fa = f(*(a,)+args)
+        fb = f(*(b,)+args)
         if cmp(fa, 0) == cmp(fb, 0):
             raise RuntimeError('f(a) and f(b) must have different signs')
         while abs(fa) > tol and abs(fb) > tol:
             ab = (a + b) / 2.
-            fab = apply(f, (ab,)+args)
+            fab = f(*(ab,)+args)
             if cmp(fa, 0) != cmp(fab, 0):
                 b = ab
                 fb = fab
@@ -83,7 +83,7 @@ class DiffusionKde(object):
         nrow, = data.shape
         weights = 2 * np.exp(-1j * np.arange(nrow) * np.pi / (2. * nrow))
         weights[0] -= 1.
-        data2 = data[range(0, nrow, 2) + range(nrow-1, 0, -2)]
+        data2 = data[list(range(0, nrow, 2)) + list(range(nrow-1, 0, -2))]
         return np.real(np.multiply(weights, fft(data2)))
 
     @staticmethod
@@ -92,8 +92,8 @@ class DiffusionKde(object):
         weights = nrow * np.exp(1j * np.arange(nrow) * np.pi / (2. * nrow))
         data2 = np.real(ifft(np.multiply(weights, data)))
         out = np.zeros((nrow,), dtype=float)
-        out[range(0, nrow, 2)]    = data2[:(nrow / 2)]
-        out[range(nrow-1, 0, -2)] = data2[(nrow / 2) + 1:]
+        out[list(range(0, nrow, 2))]    = data2[:(nrow / 2)]
+        out[list(range(nrow-1, 0, -2))] = data2[(nrow / 2) + 1:]
         return out
 
     @staticmethod
@@ -104,7 +104,7 @@ class DiffusionKde(object):
     def __fixed_point(t, N, I, a2):
         l = 7
         f = DiffusionKde.__compf(t, l, I, a2)
-        for s in xrange(l-1, 1, -1):
+        for s in range(l-1, 1, -1):
             K0 = np.prod(np.arange(1, 2 * s, 2)) / np.sqrt(2. * np.pi)
             const = (1. + (0.5 ** (s + 0.5))) / 3.
             time = (2. * const * K0 / N / f) ** (2. / (3 + (2 * s)))
@@ -216,7 +216,7 @@ class DiffusionKde(object):
 
         ret = np.zeros((n,))
 
-        for i in xrange(n):
+        for i in range(n):
             try:
                 idx = DiffusionKde.__idx(self, _x[0][i])
                 xp = [self.__mesh[idx], self.__mesh[idx+1]]
@@ -244,7 +244,7 @@ class DiffusionKde(object):
 
 
 def main():
-    from _data import DATA as data
+    from ._data import DATA as data
     from time import time
 
 #     d1 = np.random.randn(100) + 5
@@ -265,7 +265,7 @@ def main():
 
     kde = DiffusionKde(data)
 
-    print d_3, kde(d_3); pdf = kde(mesh)
+    print(d_3, kde(d_3)); pdf = kde(mesh)
 
     runtime = time() - begin
 
@@ -273,8 +273,8 @@ def main():
 
     # print runtime, bandwidth, len(density), np.sum(density), len(mesh), sum(pdf), cdf[-1]
 
-    print runtime
-    print sum(pdf) * dx
+    print(runtime)
+    print(sum(pdf) * dx)
 
     cdf = np.cumsum(pdf)
     cdf /= cdf[-1]

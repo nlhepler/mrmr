@@ -2,14 +2,14 @@
 __version__ = '0.1.0'
 
 
-from _discretemrmr import *
-from _fastcaim import *
-from _fastcaimmrmr import *
-from _kde import *
-from _logging import *
-from _mixedmrmr import *
-from _phylomrmr import *
-from _uithread import *
+from ._discretemrmr import *
+from ._fastcaim import *
+from ._fastcaimmrmr import *
+from ._kde import *
+from ._logging import *
+from ._mixedmrmr import *
+from ._phylomrmr import *
+from ._uithread import *
 
 __all__ = ['MRMR_LOGGER']
 __all__ += _discretemrmr.__all__

@@ -31,7 +31,7 @@ import numpy as np
 
 from fakemp import FakePool
 
-from _logging import MRMR_LOGGER
+from ._logging import MRMR_LOGGER
 
 
 __all__ = ['BaseMrmr']
@@ -79,8 +79,8 @@ class BaseMrmr(object):
         n = mi.shape[0]
         m = n - 1
         mibar = 0.
-        for x in xrange(m-1):
-            for y in xrange(x+1, n-1):
+        for x in range(m-1):
+            for y in range(x+1, n-1):
                 mibar += mi[x, y]
         return 2. * mibar / (m * n)
 
@@ -188,7 +188,7 @@ class BaseMrmr(object):
 
         # do one extra because the sorting is sometimes off, do y-1 because we already include a feature by default
         # don't do the extra feature, we don't want that sort of behavior
-        for k in xrange(min(num_features-1, ncol-1)):
+        for k in range(min(num_features-1, ncol-1)):
             idx, maxrel, mrmr = max(
                 (
                     (
@@ -274,7 +274,7 @@ class BaseMrmr(object):
 
     def features(self):
         if not self.__computed:
-            raise StandardError('No mRMR model computed')
+            raise Exception('No mRMR model computed')
 
         if self.method == BaseMrmr.MAXREL:
             return [iv[0] for iv in self.__maxrel]
@@ -283,7 +283,7 @@ class BaseMrmr(object):
 
     def subset(self, x):
         if not self.__computed:
-            raise StandardError('No mRMR model computed')
+            raise Exception('No mRMR model computed')
         if x.shape[1] != self.__colsize:
             raise ValueError('model, number of features: shape mismatch')
         if hasattr(self, '_postprocess'):

@@ -36,7 +36,7 @@ class UiThread(mp.Process):
     def __init__(self):
         m = mp.Manager()
         p = m.Value('i', 0)
-        c = m.Value('i', sys.maxint)
+        c = m.Value('i', sys.maxsize)
         super(UiThread, self).__init__(target=UiThread.completion, args=(p, c))
         self.daemon = True
         self.manager = m

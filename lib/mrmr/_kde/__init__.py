@@ -1,6 +1,6 @@
 
-from _diffusionkde import *
-from _gaussiankde import *
+from ._diffusionkde import *
+from ._gaussiankde import *
 
 __all__ = []
 __all__ += _diffusionkde.__all__

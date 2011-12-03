@@ -28,8 +28,8 @@ import numpy as np
 
 from fakemp import FakePool
 
-from _kde import GaussianKde
-from _basemrmr import BaseMrmr
+from ._kde import GaussianKde
+from ._basemrmr import BaseMrmr
 
 
 __all__ = ['MixedMrmr']
@@ -87,11 +87,11 @@ class MixedMrmr(BaseMrmr):
         nrow, ncol = x.shape
 
         idxs = {
-            True:  [i for i in xrange(nrow) if targets[i]],
-            False: [i for i in xrange(nrow) if not targets[i]]
+            True:  [i for i in range(nrow) if targets[i]],
+            False: [i for i in range(nrow) if not targets[i]]
         }
 
-        for j in xrange(ncol):
+        for j in range(ncol):
             x[:, j], joint[:, j] = res[j].get()
 
         mi, h = MixedMrmr.__compute_mi_inner(vars, joint, idxs, progress)
@@ -124,9 +124,9 @@ class MixedMrmr(BaseMrmr):
 
         pool = FakePool()
 
-        res = [None for j in xrange(ncol)]
+        res = [None for j in range(ncol)]
 
-        for j in xrange(ncol):
+        for j in range(ncol):
             res[j] = pool.apply_async(MixedMrmr.__estimate_pdf, (x[:, j], idxs, progress))
 
         pool.close()

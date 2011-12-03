@@ -28,7 +28,7 @@ from multiprocessing import cpu_count
 
 from fakemp import farmout, farmworker 
 
-from _basemrmr import BaseMrmr
+from ._basemrmr import BaseMrmr
 
 
 __all__ = ['DiscreteMrmr']
