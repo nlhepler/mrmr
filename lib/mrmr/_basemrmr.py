@@ -168,17 +168,16 @@ class BaseMrmr(object):
 #         L_D_t = D_t.tolist()
 
         idx, maxrel = mi_vals[0]
-        mi_vars, h_vars = {}, {}
-        s_vars = {} if cls._NORMALIZED else mi_vars
+        mi_vars, h_vars, mih_vars = {}, {}, {}
+        s_vars = mih_vars if cls._NORMALIZED else mi_vars
 
         log.debug('selected (1) variable %d with maxrel %.4f and mrmr %.4f' % (idx, maxrel, maxrel))
 
         mi_vars[idx], h_vars[idx] = cls._compute_mi_inter(variables, variables[:, idx], ui)
-        if cls._NORMALIZED:
-            s_vars[idx] = np.divide(mi_vars[idx], h_vars[idx])
+        mih_vars[idx] = np.divide(mi_vars[idx], h_vars[idx])
 
         # find related values
-        related = sorted(((i, v) for i, v in enumerate(s_vars[idx]) if v > threshold and i != idx),
+        related = sorted(((i, v) for i, v in enumerate(mih_vars[idx]) if v > threshold and i != idx),
             key=itemgetter(1),
             reverse=True
         )
@@ -206,14 +205,12 @@ class BaseMrmr(object):
             )
 
             mi_vars[idx], h_vars[idx] = cls._compute_mi_intra(variables, variables[:, idx], ui)
+            mih_vars[idx] = np.divide(mi_vars[idx], h_vars[idx])
 
             log.debug('selected (%d) variable %d with maxrel %.4f and mrmr %.4f' % (k + 2, idx, maxrel, mrmr))
 
-            if cls._NORMALIZED:
-                s_vars[idx] = np.divide(mi_vars[idx], h_vars[idx])
-
             # find related values
-            related = sorted(((i, v) for i, v in enumerate(s_vars[idx]) if v > threshold and i != idx),
+            related = sorted(((i, v) for i, v in enumerate(mih_vars[idx]) if v > threshold and i != idx),
                 key=itemgetter(1),
                 reverse=True
             )
@@ -277,9 +274,18 @@ class BaseMrmr(object):
             raise Exception('No mRMR model computed')
 
         if self.method == BaseMrmr.MAXREL:
-            return [iv[0] for iv in self.__maxrel]
+            return [i for i, v in self.__maxrel]
         else:
-            return [ivr[0] for ivr in self.__mrmr]
+            return [i for i, v, r in self.__mrmr]
+
+    def related(self):
+        if not self.__computed:
+            raise Exception('No mRMR model computed')
+
+        if self.method == BaseMrmr.MAXREL:
+            raise RuntimeError('related values are not gleaned for MAXREL')
+        else:
+            return dict([(i, r) for i, v, r in self.__mrmr])
 
     def subset(self, x):
         if not self.__computed:
