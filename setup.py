@@ -20,6 +20,6 @@ setup(name='mrmr',
             'mrmr': 'lib/mrmr',
             'mrmr._kde': 'lib/mrmr/_kde'
       },
-      data_files=[('/usr/local/bin', ['bin/mrmr'])],
+      scripts=['scripts/mrmr'],
       requires=['fakemp', 'numpy']
      )
