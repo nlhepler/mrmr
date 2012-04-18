@@ -22,11 +22,13 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from __future__ import division, print_function
+
 import numpy as np
 
 from multiprocessing import cpu_count
 
-from fakemp import farmout, farmworker 
+from fakemp import farmout, farmworker
 
 from ._basemrmr import BaseMrmr
 
@@ -45,7 +47,7 @@ def _compute_mi_inner(vclasses, variables, tclasses, targets, p=None):
                 p_t, targets_t = tcache[t]
             else:
                 targets_t = targets == t
-                p_t = float(np.sum(targets_t)) / nrow # p(X == t)
+                p_t = np.sum(targets_t) / nrow # p(X == t)
                 tcache[t] = (p_t, targets_t)
             p_v = np.sum(vars_v, axis=0).astype(float) / nrow # p(Y == v)
             p_tv = np.sum(np.multiply(targets_t, vars_v), axis=0).astype(float) / nrow # p(X == t, Y == v)
@@ -84,7 +86,7 @@ class DiscreteMrmr(BaseMrmr):
             progress = ui.progress
 
 #         numcpu = cpu_count()
-#         percpu = int(vcol / numcpu + 0.5) 
+#         percpu = int(vcol / numcpu + 0.5)
 
         return _compute_mi_inner(vclasses, variables, tclasses, targets, progress)
 

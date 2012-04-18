@@ -1,4 +1,6 @@
 
+from __future__ import division, print_function
+
 from ._fastcaim import FastCaim
 from ._discretemrmr import DiscreteMrmr
 
