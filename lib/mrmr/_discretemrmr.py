@@ -113,10 +113,10 @@ class DiscreteMrmr(BaseMrmr):
     def _prepare(x, y, ui=None):
 
         if x.dtype != int and x.dtype != bool:
-            raise ValueError('X must belong to discrete classes of type `int\'')
+            raise ValueError("X must belong to discrete classes of type `int' or type `bool'")
 
         if y.dtype != int and y.dtype != bool:
-            raise ValueError('Y must belong to discrete classes of type `int\'')
+            raise ValueError("Y must belong to discrete classes of type `int' or type `bool'")
 
         variables = np.copy(x)
         targets = np.copy(np.atleast_2d(y))
@@ -127,7 +127,7 @@ class DiscreteMrmr(BaseMrmr):
         if trow == 1 and tcol == vrow:
             targets = targets.T
         elif tcol != 1 or trow != vrow:
-            raise ValueError('`y\' should have as many entries as `x\' has rows.')
+            raise ValueError("`y' should have as many entries as `x' has rows.")
 
 #         if ui is not None:
 #             ui.complete.value *= 8

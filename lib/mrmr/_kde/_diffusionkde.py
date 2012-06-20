@@ -53,7 +53,7 @@ class DiffusionKde(object):
         tol = 4.4408920985006262e-16
         fa = f(*(a,)+args)
         fb = f(*(b,)+args)
-        if cmp(fa, 0) == cmp(fb, 0):
+        if np.sign(fa) == np.sign(fb):
             raise RuntimeError('f(a) and f(b) must have different signs')
         while abs(fa) > tol and abs(fb) > tol:
             ab = (a + b) / 2.
@@ -246,7 +246,7 @@ class DiffusionKde(object):
 
 
 def main():
-    from ._data import DATA as data
+    from mrmr._kde._data import DATA as data
     from time import time
 
 #     d1 = np.random.randn(100) + 5
