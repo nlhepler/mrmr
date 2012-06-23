@@ -21,5 +21,5 @@ setup(name='mrmr',
             'mrmr._kde': 'lib/mrmr/_kde'
       },
       scripts=['scripts/mrmr'],
-      requires=['fakemp', 'numpy']
+      requires=['fakemp (>=0.9.1)', 'numpy (>=1.6)']
      )
