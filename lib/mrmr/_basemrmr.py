@@ -31,8 +31,6 @@ from sys import stdout
 
 import numpy as np
 
-from fakemp import FakePool
-
 from ._logging import MRMR_LOGGER
 
 
@@ -122,7 +120,6 @@ class BaseMrmr(object):
 
         np_err = np.seterr(divide='ignore', invalid='ignore')
 
-        nrow = x.shape[0]
         ncol = x.shape[1]
 
 #         res_t = {}
